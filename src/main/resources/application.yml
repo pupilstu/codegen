@@ -1,0 +1,37 @@
+spring:
+  main:
+    banner-mode: off
+
+codegen:
+  engine:
+  code-config-name:
+  bean-config-name:
+  template-config-name:
+  additional-config-name:
+
+  data-config:
+    json:
+      json-file-path: D:\project\codegen\src\main\resources\data.json
+#    db:
+#      driver: com.mysql.cj.jdbc.Driver
+#      url: jdbc:mysql://localhost:3306/test?serverTimezone=UTC #Asia/Shangha
+#      user: root
+#      password: 123456
+#      catalog: test
+#      schema-pattern:
+#      table-name-pattern: '%e%'
+#      column-name-pattern: '%'
+#      table-names:
+
+  receiver-config:
+    output-dir: D:\project\codegen\src\main\resources\code
+    
+  template-config:
+    template-dir: D:\project\codegen\src\main\resources
+    templates:
+      - template-file: extractor.java.vm
+        filename-template: 'ISs${data}Extractor.java'
+        target-dir: D:\project\jxw\src\main\java\com\kc\mdm\quartz\pmp\execute\extractor\ss
+
+  additional-config:
+    key: value
