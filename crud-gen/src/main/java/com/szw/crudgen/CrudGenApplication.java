@@ -32,10 +32,10 @@ public class CrudGenApplication implements CommandLineRunner {
 	private CrudGenProperties crudGenProperties;
 
 	@Override
-	public void run(String... args) throws Exception {
+	public void run(String... args) {
 		JdbcDataSource.Builder builder = crudGenProperties.getJdbcDs ();
 
-		/**
+		/*
 		 * You can write your own filters here.
 		 */
 		builder.setTableFilter (table -> true);
@@ -43,7 +43,7 @@ public class CrudGenApplication implements CommandLineRunner {
 
 		JdbcDataSource dataSource = builder.build ();
 
-		/**
+		/*
 		 * 显示帮助信息，帮助信息会指示catalog和scheam哪一个是真正的数据库名，注意查看日志打印。
 		 */
 		dataSource.showHelpInfo ();
