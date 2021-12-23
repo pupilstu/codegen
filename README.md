@@ -17,7 +17,7 @@ DataSource、TemplateSource和Receiver都可以自由扩展和搭配，以满足
 ## crud-gen
 crud-gen是codegen-core的一个应用，配置好数据库连接、代码目录等信息后，可一键生成java项目的CRUD源代码。需要你手动配置的项目在**application-config.yml**中，请不要修改**application.yml**（除非你有特殊需要）。
 
-此外，crud-gen的代码模板（.vm文件）参考了人人开源的代码生成器项目 [https://gitee.com/renrenio/renren-generator]，在此表示感谢！
+此外，crud-gen的代码模板（.vm文件）参考了人人开源的代码生成器项目 https://gitee.com/renrenio/renren-generator ，在此表示感谢！
 
 ## 模板引擎
 
