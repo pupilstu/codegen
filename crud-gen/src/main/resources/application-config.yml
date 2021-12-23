@@ -1,0 +1,33 @@
+crud-gen:
+  # 项目的common模块路径.
+  mainPath: com.szw
+  # 本模块包名
+  package: com.szw
+  # 模块名
+  moduleName: user
+  author: szw
+
+  # 文件夹路径相关配置
+  path:
+    main: D:\project\monkey-space\monkey-space\ms-user\src\main
+    packge: ${crud-gen.main}\java\com\szw\user
+    resources: ${crud-gen.main}\resources
+
+  datasource:
+    url: 'jdbc:mysql://192.168.108.129/ms-user
+      ?useUnicode=true
+      &characterEncoding=UTF-8
+      &useSSL=false
+      &serverTimezone=Asia/Shanghai
+      &useInformationSchema=true'  # 必须要加 useInformationSchema=true ！！！否则将读不到表的comment
+
+    user: root
+    password: root
+    driver: com.mysql.cj.jdbc.Driver
+    # Mysql的数据库名。有的数据库使用catalog作为数据库名，有的则使用scheam，
+    # 可配置好数据库连接后启动程序，从日志打印查看具体是哪一个。
+    catalog: ms-user
+    scheam:
+    # 以下两项均可使用sql通配符，不填表示匹配所有
+    table-name: user/_%
+    column-name:
