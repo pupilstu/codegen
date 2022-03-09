@@ -55,9 +55,11 @@ public class CrudGenApplication implements CommandLineRunner {
 				.setTemplateSource (simpleTs)
 				.setStaticData (crudGenProperties.getStaticData ())
 				.addInterceptors (chain -> {
-					Object data = chain.getData ();
+					// 名称转换拦截器
 
+					Object data = chain.getData ();
 					Table table = (Table) data;
+
 					HashMap<String, Object> map = new HashMap<> ();
 					map.put ("className", table.getName ());
 					map.put ("classname", table.getLccName ());

@@ -7,5 +7,11 @@
     <version>0.0.1-SNAPSHOT</version>
     <name>codegen</name>
     <description>codegen,code generator.</description>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>codegen-core</module>
+        <module>crud-gen</module>
+    </modules>
 
 </project>

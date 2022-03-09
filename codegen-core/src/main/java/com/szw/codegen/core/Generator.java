@@ -39,6 +39,7 @@ public class Generator {
 		this.staticDataName = builder.staticDataName;
 		this.builder = builder;
 
+		// 在拦截链末尾添加合并拦截器
 		interceptorList.add (new MergeInterceptor ());
 	}
 
@@ -87,13 +88,9 @@ public class Generator {
 			 */
 			while (dataItr.hasNext ()) {
 				Object data = dataItr.next ();
-
 				Iterator<Interceptor> interceptorItr = interceptorList.iterator ();
-
 				ChainImpl chain = new ChainImpl (data, template, this.builder, interceptorItr);
-
 				Code code = interceptorItr.next ().intercept (chain);
-
 				receiver.receive (code);
 			}
 
@@ -103,7 +100,7 @@ public class Generator {
 	}
 
 	/**
-	 * 拦截链上的最后一个拦截器，执行模板域数据合并的任务
+	 * 拦截链上的最后一个拦截器，执行模板和数据合并的任务
 	 */
 	private class MergeInterceptor implements Interceptor {
 		@Override

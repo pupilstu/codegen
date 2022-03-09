@@ -14,7 +14,7 @@ import java.util.Objects;
  * @author SZW
  */
 public class VelocityTemplateEngine implements Engine {
-	private final VelocityEngine ve = new org.apache.velocity.app.VelocityEngine ();
+	private final VelocityEngine ve = new VelocityEngine ();
 	private final VelocityContext globalCtx = new VelocityContext ();
 
 	@Override

@@ -35,7 +35,7 @@ public interface DataSource<T> extends Iterable<T> {
 	}
 
 	/**
-	 * 数据迭代器
+	 * 数据迭代器，需要多次调用此方法，请考虑将内部的数据集合进行缓存
 	 *
 	 * @return 数据迭代器
 	 */

@@ -14,7 +14,6 @@ import java.util.Map;
 
 /**
  * @author SZW
- * @date 2021/12/18
  */
 @Data
 @ConfigurationProperties(prefix = "crud-gen")

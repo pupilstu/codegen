@@ -62,7 +62,7 @@ public class DBUtil {
 	 * @param catalog           目录
 	 * @param schema            模式
 	 * @param tableName         表名
-	 * @param type              表类型
+	 * @param types              表类型
 	 * @param columnNamePattern 列名模式
 	 * @param fieldFilter       表过滤器
 	 * @return Table
@@ -71,11 +71,11 @@ public class DBUtil {
 	                             String catalog,
 	                             String schema,
 	                             String tableName,
-	                             String type,
+	                             String[] types,
 	                             String columnNamePattern,
 	                             Function<Field, Boolean> fieldFilter) throws SQLException {
 
-		ResultSet resultSet = dbMetaData.getTables (catalog, schema, tableName, new String[]{type});
+		ResultSet resultSet = dbMetaData.getTables (catalog, schema, tableName, types);
 
 		if (!resultSet.next ()) {
 			return null;

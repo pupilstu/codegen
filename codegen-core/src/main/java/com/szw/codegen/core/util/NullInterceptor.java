@@ -4,6 +4,8 @@ import com.szw.codegen.core.Interceptor;
 import com.szw.codegen.core.entity.Code;
 
 /**
+ * 连接器空对象实现
+ *
  * @author SZW
  * @date 2021/12/22
  */

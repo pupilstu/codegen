@@ -17,6 +17,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 
 
@@ -39,6 +40,8 @@ public class JdbcDataSource implements DataSource<Table> {
 	private final Function<Table, Boolean> tableFilter;
 	private final Function<Field, Boolean> fieldFilter;
 
+	private List<Table> tableList = null;
+
 	public JdbcDataSource(Builder builder) {
 		driver = builder.driver;
 		url = builder.url;
@@ -55,6 +58,10 @@ public class JdbcDataSource implements DataSource<Table> {
 
 	@Override
 	public Iterator<Table> iterator() {
+		if (Objects.nonNull (tableList) && !tableList.isEmpty ()) {
+			return tableList.iterator ();
+		}
+
 		try {
 			Connection conn = DBUtil.getConnection (driver, url, user, password);
 			//statement
@@ -62,9 +69,8 @@ public class JdbcDataSource implements DataSource<Table> {
 			//获取数据库元数据
 			DatabaseMetaData dmd = conn.getMetaData ();
 
-			List<Table> tableList;
 			if (tableNames == null || tableNames.size () < 1) {
-				log.info ("Didn't find the tableNames config, get table names from db.");
+				log.info ("Didn't find the tableNames config, get table names from db by using 'tableNamePattern'.");
 
 				tableList = DBUtil.getTables (
 						stmt, dmd,
@@ -79,9 +85,18 @@ public class JdbcDataSource implements DataSource<Table> {
 							stmt, dmd,
 							catalog, schemaPattern, tableName,
 							null, columnNamePattern, fieldFilter);
-					tableList.add (table);
+
+					if (Objects.nonNull (table)) {
+						tableList.add (table);
+					}
 				}
 			}
+
+			StringBuilder tables = new StringBuilder ();
+			for (Table table : tableList) {
+				tables.append (table.getRawName ()).append (", ");
+			}
+			log.info ("These tables wil be used:\n{}\n", tables);
 
 			conn.close ();
 			return tableList.iterator ();

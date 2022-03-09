@@ -127,7 +127,7 @@ public class EasyTable {
 
 		tableModel = new AbstractTableModel () {
 			@Override
-			public java.lang.String getColumnName(int column) {
+			public String getColumnName(int column) {
 				return props.get (column).getName ();
 			}
 

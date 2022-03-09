@@ -46,6 +46,7 @@ public class SimpleTemplateSource implements TemplateSource {
 						if (!path.isAbsolute ()) {
 							path = Paths.get (templateDir, path.toString ());
 						}
+						log.info ("Load template from dir '{}'.", path);
 						if (Files.exists (path)) {
 							try {
 								String content = new String (Files.readAllBytes (path), StandardCharsets.UTF_8);
