@@ -1,17 +1,17 @@
-package com.szw.codegen.core.entity;
+package com.szw.codegen.core.model;
 
 import com.szw.codegen.core.util.NameUtil;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 /**
- * 对应数据库表的某个字段
+ * 数据库表中的列的元数据。是对{@link java.sql.DatabaseMetaData#getColumns(String, String, String, String)}查询结果的封装。
  *
  * @author SZW
  */
 @Data
 @Accessors(chain = true)
-public class Field {
+public class ColumnMetaData {
 	/**
 	 * String => column name,lower Camel Case.
 	 */
@@ -75,7 +75,7 @@ public class Field {
 	 */
 	private String isAutoincrement;
 
-	public Field(String columnName) {
+	public ColumnMetaData(String columnName) {
 		this.rawName = columnName;
 		this.name = NameUtil.toLowerCamelCase (columnName);
 	}

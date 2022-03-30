@@ -1,4 +1,4 @@
-package com.szw.codegen.core.entity;
+package com.szw.codegen.core.model;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -9,11 +9,20 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(chain = true)
-public class Code {
+public class ResultFile {
 
-	private String parentDir;
+	/**
+	 * 代码存放的目标文件夹
+	 */
+	private String targetDir;
 
+	/**
+	 * 文件名
+	 */
 	private String filename;
 
+	/**
+	 * 内容
+	 */
 	private String content;
 }

@@ -1,9 +1,8 @@
-package com.szw.codegen.core.datasource;
+package com.szw.codegen.core.container.data;
 
-import com.szw.codegen.core.DataSource;
-import com.szw.codegen.core.util.NullIterator;
-import lombok.Data;
-import lombok.experimental.Accessors;
+import com.szw.codegen.core.Container;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -21,25 +20,26 @@ import java.util.*;
  *
  * @author SZW
  */
-@Data
-@Accessors(chain = true)
-public class CsvDataSource implements DataSource<Map<String, String>> {
+public class CsvDataContainer implements Container<Map<String, String>> {
+	@Getter
+	@Setter
 	private String CsvFilePath;
+	@Getter
+	@Setter
 	private String format = "Default";
+	@Getter
+	@Setter
 	private String charset = "UTF-8";
 
-	public CsvDataSource(String csvFilePath) {
-		CsvFilePath = csvFilePath;
-	}
+	private List<Map<String, String>> datas;
 
-	public CsvDataSource(String csvFilePath, String format, String charset) {
-		CsvFilePath = csvFilePath;
-		this.format = format;
-		this.charset = charset;
+	@Override
+	public Collection<Map<String, String>> getCollection() {
+		return datas;
 	}
 
 	@Override
-	public Iterator<Map<String, String>> iterator() {
+	public void load() {
 		Path path = Paths.get (CsvFilePath);
 		if (Files.exists (path) || !Files.isDirectory (path)) {
 			try {
@@ -48,7 +48,7 @@ public class CsvDataSource implements DataSource<Map<String, String>> {
 
 				List<String> headerNames = parser.getHeaderNames ();
 				List<CSVRecord> records = parser.getRecords ();
-				List<Map<String, String>> datas = new ArrayList<> (records.size ());
+				datas = new ArrayList<> (records.size ());
 
 				for (CSVRecord record : records) {
 					Map<String, String> map = new HashMap<> (headerNames.size ());
@@ -57,11 +57,9 @@ public class CsvDataSource implements DataSource<Map<String, String>> {
 					}
 					datas.add (map);
 				}
-				return datas.iterator ();
 			} catch (IOException e) {
 				e.printStackTrace ();
 			}
 		}
-		return NullIterator.newInstance ();
 	}
 }

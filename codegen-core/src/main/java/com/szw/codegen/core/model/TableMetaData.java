@@ -1,22 +1,23 @@
-package com.szw.codegen.core.entity;
+package com.szw.codegen.core.model;
 
 import com.szw.codegen.core.util.NameUtil;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
+import java.sql.DatabaseMetaData;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 对应数据库表
+ * 数据库表元数据。是对{@link DatabaseMetaData#getTables(String, String, String, String[])}查询结果的封装。
  *
  * @author SZW
  */
 @Slf4j
 @Data
 @Accessors(chain = true)
-public class Table {
+public class TableMetaData {
 	/**
 	 * String => table name,Upper Camel Case.
 	 */
@@ -48,9 +49,9 @@ public class Table {
 	/**
 	 * Fields
 	 */
-	private List<Field> fields = new ArrayList<> ();
+	private List<ColumnMetaData> columnMetaDatas = new ArrayList<> ();
 
-	public Table(String tableName) {
+	public TableMetaData(String tableName) {
 		this.rawName = tableName;
 		this.lccName = NameUtil.toLowerCamelCase (tableName);
 		this.name = NameUtil.toUpperCamelCase (tableName);

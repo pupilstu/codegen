@@ -1,16 +1,12 @@
 package com.szw.codegen.core;
 
-import com.szw.codegen.core.entity.Code;
+import java.util.function.Consumer;
 
 /**
- * 接收器，接收生成的代码，进行下一步处理，例如写入本地文件、写入zip等。
+ * 接收器，接收生成的代码，进行下一步处理。例如写入本地文件、写入zip、传输进网络流、前端展示等等。
  *
  * @author SZW
  */
-public interface Receiver {
-
-	/**
-	 * 接收代码文件，进行下一步处理
-	 */
-	void receive(Code code);
+@FunctionalInterface
+public interface Receiver<R> extends Consumer<R> {
 }

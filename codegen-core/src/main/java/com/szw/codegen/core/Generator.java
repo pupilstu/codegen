@@ -1,172 +1,178 @@
 package com.szw.codegen.core;
 
 import com.szw.codegen.core.engine.VelocityTemplateEngine;
-import com.szw.codegen.core.entity.Code;
-import com.szw.codegen.core.entity.Template;
 import lombok.Data;
-import lombok.Getter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
  * @author SZW
  */
 @Slf4j
-@Getter
 public class Generator {
-	private final Engine engine;
-	private final DataSource<?> dataSource;
-	private final TemplateSource templateSource;
-	private final Receiver receiver;
-	private final List<Interceptor> interceptorList;
-	private final Object staticData;
-	private final String staticDataName;
-	private final String dataName;
 
-	private final Builder builder;
-
-	public Generator(Builder builder) {
-		this.engine = builder.engine;
-		this.dataSource = builder.dataSource;
-		this.staticData = builder.staticData;
-		this.templateSource = builder.templateSource;
-		this.receiver = builder.receiver;
-		this.interceptorList = builder.interceptorList;
-		this.dataName = builder.dataName;
-		this.staticDataName = builder.staticDataName;
-		this.builder = builder;
-
-		// 在拦截链末尾添加合并拦截器
-		interceptorList.add (new MergeInterceptor ());
+	public static <T, R> Executor<T, R> executor() {
+		return new Executor<> ();
 	}
 
 	/**
-	 * 生成，数据源和模板源提供数据和模板，由接收器完成下一步工作（例如将结果写入文件）
+	 * @param <T> 模板类型
+	 * @param <R> 结果类型
 	 */
-	public void generate() {
-		//NotNull check.
-		Iterator<?> dataItr = dataSource.iterator ();
-		if (!dataItr.hasNext ()) {
-			log.warn ("No Beans available, will generate nothing.");
-			return;
-		}
-		Iterator<Template> templateItr = templateSource.iterator ();
-		if (!templateItr.hasNext ()) {
-			log.warn ("No template available, will generate nothing.");
-			return;
-		}
-
-		// add static data
-		if (staticData instanceof Map) {
-			engine.addStaticData ((Map<?, ?>) staticData);
-		} else {
-			engine.addStaticData (staticDataName, staticData);
-		}
-
-		while (templateItr.hasNext ()) {
-			Template template = templateItr.next ();
-
-			/*
-			 * 静态模板
-			 */
-			Boolean staticScope = template.getStaticScope ();
-			if (staticScope != null && staticScope) {
-				Iterator<Interceptor> interceptorItr = interceptorList.iterator ();
-
-				ChainImpl chain = new ChainImpl (null, template, this.builder, interceptorItr);
-
-				Code code = interceptorItr.next ().intercept (chain);
-
-				receiver.receive (code);
-			}
-
-			/*
-			 * 非静态模板，遍历data，生成代码
-			 */
-			while (dataItr.hasNext ()) {
-				Object data = dataItr.next ();
-				Iterator<Interceptor> interceptorItr = interceptorList.iterator ();
-				ChainImpl chain = new ChainImpl (data, template, this.builder, interceptorItr);
-				Code code = interceptorItr.next ().intercept (chain);
-				receiver.receive (code);
-			}
-
-			// 重置遍历器
-			dataItr = dataSource.iterator ();
-		}
-	}
-
-	/**
-	 * 拦截链上的最后一个拦截器，执行模板和数据合并的任务
-	 */
-	private class MergeInterceptor implements Interceptor {
-		@Override
-		public Code intercept(Chain chain) {
-			Object data = chain.getData ();
-			Template template = chain.getTemplate ();
-			Code code;
-
-			if (data == null) {
-				code = new Code ()
-						.setParentDir (template.getTargetDir ())
-						.setFilename (engine.mergeStatic (template.getFilenameTemplate ()))
-						.setContent (engine.mergeStatic (template.getContent ()));
-				return code;
-			}
-
-			if (data instanceof Map) {
-				Map<?, ?> dataMap = (Map<?, ?>) data;
-				code = new Code ()
-						.setParentDir (template.getTargetDir ())
-						.setFilename (engine.merge (template.getFilenameTemplate (), dataMap))
-						.setContent (engine.merge (template.getContent (), dataMap));
-			} else {
-				code = new Code ()
-						.setParentDir (template.getTargetDir ())
-						.setFilename (engine.merge (template.getFilenameTemplate (), dataName, data))
-						.setContent (engine.merge (template.getContent (), dataName, data));
-			}
-
-			return code;
-		}
-	}
-
 	@Data
 	@Accessors(chain = true)
-	public static class Builder {
+	public static class Executor<T, R> {
 		private Engine engine = new VelocityTemplateEngine ();
-		private DataSource<?> dataSource;
-		private Object staticData;
-		private TemplateSource templateSource;
-		private Receiver receiver;
-		private List<Interceptor> interceptorList = new ArrayList<> (4);
-		private String dataName;
-		private String staticDataName;
 
-		public Builder addInterceptors(Interceptor... interceptors) {
-			interceptorList.addAll (Arrays.asList (interceptors));
-			return this;
+		private Iterable<?> datas;
+		private Object staticData;
+
+
+		private Iterable<T> templates;
+
+		private Receiver<R> receiver;
+
+		private MergeStrategy<T, R> mergeStrategy;
+
+		private String dataName = "data";
+		private String staticDataName = "static";
+
+		private final List<Interceptor<T, R>> interceptorList = new ArrayList<> (4);
+		private final InterceptorAddIt interceptorAddIt = new InterceptorAddIt ();
+
+		public InterceptorAddIt addInterceptors() {
+			return interceptorAddIt;
 		}
 
-		public Generator build() {
-			if (dataSource == null || templateSource == null || receiver == null) {
-				throw new NullPointerException ("dataSource,templateSource and receiver must no null!");
+		private void notNullCheck(Object o, String name) {
+			if (o == null) {
+				throw new NullPointerException ("The property '" + name + "' must not be null!");
 			}
+		}
 
-			if (StringUtils.isEmpty (staticDataName)) {
+		/**
+		 * 属性设置之后，{@link #execute()} 之前执行，对属性设置进行检查。
+		 */
+		private void afterPropertiesSet() {
+			// 非空检查
+			notNullCheck (datas, "datas");
+			notNullCheck (templates, "templates");
+			notNullCheck (receiver, "receiver");
+			notNullCheck (mergeStrategy, "mergeStrategy");
+
+			// Map 数据不需要使用 staticDataName
+			if (StringUtils.isEmpty (staticDataName) && !(staticData instanceof Map)) {
 				staticDataName = staticData.getClass ().getSimpleName ().toLowerCase (Locale.ROOT);
+				log.info ("static data name: {}", staticDataName);
 			}
-			log.info ("static data name: {}", staticDataName);
-
 			if (StringUtils.isEmpty (dataName)) {
-				dataName = dataSource.getDataName ();
+				dataName = getDataName (datas);
+				log.info ("data name: {}", dataName);
 			}
-			log.info ("data name: {}", dataName);
 
-			return new Generator (this);
+			/* ==================== 初始化相关 ==================== */
+
+			// 向拦截链结尾添加 MergeInterceptor
+			interceptorList.add (new MergeInterceptor ());
+
+			// 设置 dataName
+			engine.setDataName (dataName);
+
+			// 添加静态数据
+			if (staticData instanceof Map) {
+				engine.addStaticData ((Map<?, ?>) staticData);
+			} else {
+				engine.addStaticData (staticDataName, staticData);
+			}
+
+		}
+
+		public void execute() {
+
+			// 属性设置检查
+			afterPropertiesSet ();
+
+			Iterator<?> dataItr = datas.iterator ();
+			if (!dataItr.hasNext ()) {
+				log.warn ("None data is available, will generate nothing.");
+				return;
+			}
+
+			Iterator<T> templateItr = templates.iterator ();
+			if (!templateItr.hasNext ()) {
+				log.warn ("None template is available, will generate nothing.");
+				return;
+			}
+
+			// 遍历模板，执行合并
+			while (templateItr.hasNext ()) {
+				T template = templateItr.next ();
+
+				R result = mergeStrategy.doMerge (template, staticData, engine);
+				if (result != null) {
+					receiver.accept (result);
+					continue;
+				}
+
+				while (dataItr.hasNext ()) {
+					Object data = dataItr.next ();
+
+					Iterator<Interceptor<T, R>> interceptorItr = interceptorList.iterator ();
+
+					result = new ChainImpl<> (interceptorItr)
+							.proceed (template, data);
+
+					receiver.accept (result);
+				}
+
+				// 重置遍历器
+				dataItr = datas.iterator ();
+			}
+		}
+
+		private String getDataName(Iterable<?> data) {
+			Type[] genericInterfaces = data.getClass ().getGenericInterfaces ();
+			for (Type genericInterface : genericInterfaces) {
+				if (genericInterface instanceof ParameterizedType) {
+					ParameterizedType parameterizedType = (ParameterizedType) genericInterface;
+					if (parameterizedType.getRawType ().equals (Iterable.class)) {
+						return ((Class<?>) parameterizedType.getActualTypeArguments ()[0])
+								.getSimpleName ()
+								.toLowerCase (Locale.ROOT);
+					}
+				}
+			}
+			return dataName;
+		}
+
+		/**
+		 * 拦截链上的最后一个拦截器，执行模板和数据合并的任务
+		 */
+		private class MergeInterceptor implements Interceptor<T, R> {
+			@Override
+			public R intercept(T template, Object data, Chain<T, R> chain) {
+				if (data == null) {
+					return mergeStrategy.doMerge (template, staticData, engine);
+				}
+
+				return mergeStrategy.doMerge (template, data, staticData, engine);
+			}
+		}
+
+		public class InterceptorAddIt {
+			public InterceptorAddIt addNext(Interceptor<T, R> interceptor) {
+				interceptorList.add (interceptor);
+				return InterceptorAddIt.this;
+			}
+
+			public Executor<T, R> finished() {
+				return Executor.this;
+			}
 		}
 	}
 }

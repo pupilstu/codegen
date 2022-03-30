@@ -21,4 +21,6 @@
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
-/crud-gen/src/main/java/com/szw/crudgen/Test.java
+
+/codegen-core/src/main/java/com/szw/codegen/core/util/EasyTable.java
+/codegen-core/src/main/java/com/szw/codegen/core/util/BeanUtil.java

@@ -1,7 +1,7 @@
 package com.szw.codegen.core.util;
 
-import com.szw.codegen.core.entity.Field;
-import com.szw.codegen.core.entity.Table;
+import com.szw.codegen.core.model.ColumnMetaData;
+import com.szw.codegen.core.model.TableMetaData;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
@@ -12,31 +12,50 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * 数据库工具类，用于创建数据库连接、解析元数据等
+ * 数据库元数据工具类，用于解析元数据，将元数据信息封装成{@link TableMetaData}和{@link ColumnMetaData}。
  *
  * @author SZW
  */
 @Slf4j
-public class DBUtil {
+public class DBMetaDataUtil implements AutoCloseable {
+
+	/**
+	 * 数据库连接信息
+	 */
+	private final String driver;
+	private final String url;
+	private final String user;
+	private final String password;
+
+	private final Connection connection;
+	private final Statement statement;
+	private final DatabaseMetaData dbMetaData;
+
+	public DBMetaDataUtil(String driver, String url, String user, String password) throws SQLException, ClassNotFoundException {
+		this.driver = driver;
+		this.url = url;
+		this.user = user;
+		this.password = password;
+
+		this.connection = getConnection ();
+		this.statement = connection.createStatement ();
+		this.dbMetaData = connection.getMetaData ();
+	}
 
 	/**
 	 * 获取数据库连接
 	 *
-	 * @param driver   驱动
-	 * @param url      url
-	 * @param user     用户
-	 * @param password 密码
 	 * @return 数据库连接
 	 */
-	public static Connection getConnection(String driver, String url, String user, String password) throws ClassNotFoundException, SQLException {
+	public Connection getConnection() throws ClassNotFoundException, SQLException {
 		Class.forName (driver);
 		return DriverManager.getConnection (url, user, password);
 	}
 
 	/**
-	 * 将元数据转化为{@link Table}对象
+	 * 将元数据转化为{@link TableMetaData}对象
 	 */
-	private static Table toTable(ResultSet resultSet) throws SQLException {
+	protected TableMetaData toTableMetaData(ResultSet resultSet) throws SQLException {
 		String tableCat = resultSet.getString ("TABLE_CAT");
 		String tableSchem = resultSet.getString ("TABLE_SCHEM");
 		String tableName = resultSet.getString ("TABLE_NAME");
@@ -45,9 +64,10 @@ public class DBUtil {
 
 		/* 其他元数据：
 		 * String selfReferencingColName = resultSet.getString ("SELF_REFERENCING_COL_NAME");
-		 * String refGeneration = resultSet.getString ("REF_GENERATION");*/
+		 * String refGeneration = resultSet.getString ("REF_GENERATION");
+		 */
 
-		return new Table (tableName)
+		return new TableMetaData (tableName)
 				.setCatalog (tableCat)
 				.setSchema (tableSchem)
 				.setType (tableType)
@@ -55,25 +75,19 @@ public class DBUtil {
 	}
 
 	/**
-	 * 获取数据库指定表的{@link Table}对象
+	 * 获取数据库指定表的{@link TableMetaData}对象
 	 *
-	 * @param stmt              Statement
-	 * @param dbMetaData        元数据对象
 	 * @param catalog           目录
 	 * @param schema            模式
 	 * @param tableName         表名
-	 * @param types              表类型
+	 * @param types             表类型
 	 * @param columnNamePattern 列名模式
-	 * @param fieldFilter       表过滤器
-	 * @return Table
+	 * @param columnFilter      字段过滤器
+	 * @return TableMetaData
 	 */
-	public static Table getTable(Statement stmt, DatabaseMetaData dbMetaData,
-	                             String catalog,
-	                             String schema,
-	                             String tableName,
-	                             String[] types,
-	                             String columnNamePattern,
-	                             Function<Field, Boolean> fieldFilter) throws SQLException {
+	public TableMetaData getTableMetaData(
+			String catalog, String schema, String tableName, String[] types,
+			String columnNamePattern, Function<ColumnMetaData, Boolean> columnFilter) throws SQLException {
 
 		ResultSet resultSet = dbMetaData.getTables (catalog, schema, tableName, types);
 
@@ -81,63 +95,57 @@ public class DBUtil {
 			return null;
 		}
 
-		Table table = toTable (resultSet);
+		TableMetaData tableMetaData = toTableMetaData (resultSet);
 
-		return table.setFields (getFields (
-				stmt, dbMetaData,
-				table.getCatalog (),
-				table.getSchema (),
-				table.getRawName (),
-				columnNamePattern, fieldFilter));
+		return tableMetaData.setColumnMetaDatas (getColumnMetaDatas (
+				tableMetaData.getCatalog (),
+				tableMetaData.getSchema (),
+				tableMetaData.getRawName (),
+				columnNamePattern, columnFilter));
 	}
 
 	/**
-	 * 获取符合条件的全部表
+	 * 获取符合条件的全部表。过滤器用在模式之后。
 	 *
-	 * @param stmt              Statement
-	 * @param dbMetaData        元数据对象
 	 * @param catalog           目录
 	 * @param schemaPattern     schema模式
-	 * @param tableNamePattern  表名
-	 * @param types             表类型
+	 * @param tableNamePattern  表名模式
+	 * @param types             表类型，null表示全部
 	 * @param columnNamePattern 列名模式
 	 * @param tableFilter       表过滤器
-	 * @param fieldFilter       字段过滤器
+	 * @param columnFilter      字段过滤器
 	 * @return 表列表
 	 */
-	public static List<Table> getTables(Statement stmt, DatabaseMetaData dbMetaData,
-	                                    String catalog,
-	                                    String schemaPattern,
-	                                    String tableNamePattern,
-	                                    String[] types,
-	                                    String columnNamePattern,
-	                                    Function<Table, Boolean> tableFilter,
-	                                    Function<Field, Boolean> fieldFilter) throws SQLException {
+	public List<TableMetaData> getTableMetaDatas(
+			String catalog, String schemaPattern, String tableNamePattern, String[] types,
+			String columnNamePattern, Function<TableMetaData, Boolean> tableFilter,
+			Function<ColumnMetaData, Boolean> columnFilter) throws SQLException {
+
 		//Get resultSet.
 		ResultSet resultSet = dbMetaData.getTables (catalog, schemaPattern, tableNamePattern, types);
 
-		List<Table> list = new ArrayList<> ();
+		List<TableMetaData> tableMetaDataList = new ArrayList<> ();
 
 		while (resultSet.next ()) {
-			Table table = toTable (resultSet);
+			TableMetaData tableMetaData = toTableMetaData (resultSet);
 
-			if (tableFilter.apply (table)) {
-				list.add (table.setFields (getFields (
-						stmt, dbMetaData,
-						table.getCatalog (),
-						table.getSchema (),
-						table.getRawName (),
-						columnNamePattern, fieldFilter)));
+			if (tableFilter.apply (tableMetaData)) {
+				List<ColumnMetaData> columnMetaDatas = getColumnMetaDatas (
+						tableMetaData.getCatalog (),
+						tableMetaData.getSchema (),
+						tableMetaData.getRawName (),
+						columnNamePattern, columnFilter);
+
+				tableMetaData.setColumnMetaDatas (columnMetaDatas);
+				tableMetaDataList.add (tableMetaData);
 			}
 		}
-		return list;
+		return tableMetaDataList;
 	}
 
 	/**
 	 * 获取某个表的全部字段
 	 *
-	 * @param stmt              Statement
-	 * @param dbMetaData        元数据对象
 	 * @param catalog           目录
 	 * @param schema            schema
 	 * @param tableName         表名
@@ -145,12 +153,13 @@ public class DBUtil {
 	 * @param fieldFilter       字段过滤器
 	 * @return 字段列表
 	 */
-	public static List<Field> getFields(Statement stmt, DatabaseMetaData dbMetaData,
-	                                    String catalog,
-	                                    String schema,
-	                                    String tableName,
-	                                    String columnNamePattern,
-	                                    Function<Field, Boolean> fieldFilter) throws SQLException {
+	public List<ColumnMetaData> getColumnMetaDatas(
+			String catalog,
+			String schema,
+			String tableName,
+			String columnNamePattern,
+			Function<ColumnMetaData, Boolean> fieldFilter) throws SQLException {
+
 		catalog = "".equals (catalog) ? null : catalog;
 		schema = "".equals (schema) ? null : schema;
 
@@ -164,7 +173,7 @@ public class DBUtil {
 		table += tableName + "`";
 
 		//查询并从查询结果获取元数据
-		ResultSet rs = stmt.executeQuery ("SELECT * FROM " + table + " where 0=1");
+		ResultSet rs = statement.executeQuery ("SELECT * FROM " + table + " where 0=1");
 		ResultSetMetaData rmd = rs.getMetaData ();
 
 		int columnCount = rmd.getColumnCount ();
@@ -176,7 +185,7 @@ public class DBUtil {
 		//获取列信息
 		ResultSet columns = dbMetaData.getColumns (catalog, schema, tableName, columnNamePattern);
 
-		List<Field> fields = new ArrayList<> (columnCount);
+		List<ColumnMetaData> columnMetaDataList = new ArrayList<> (columnCount);
 		while (columns.next ()) {
 			String columnName = columns.getString ("COLUMN_NAME");
 			String dataType = columns.getString ("DATA_TYPE");
@@ -198,7 +207,7 @@ public class DBUtil {
 			 * String sourceDataType = columns.getString ("SOURCE_DATA_TYPE");*/
 
 			String className = map.get (columnName);
-			Field field = new Field (columnName)
+			ColumnMetaData columnMetaData = new ColumnMetaData (columnName)
 					.setClassName (className)
 					.setDataType (dataType)
 					.setTypeName (typeName)
@@ -212,27 +221,25 @@ public class DBUtil {
 					.setIsNullable (isNullable)
 					.setIsAutoincrement (isAutoincrement);
 
-			if (fieldFilter.apply (field)) {
-				fields.add (field);
+			if (fieldFilter.apply (columnMetaData)) {
+				columnMetaDataList.add (columnMetaData);
 			}
 		}
-		return fields;
+		return columnMetaDataList;
 	}
 
 	/**
 	 * 关于数据库catalog和schema的帮助信息
-	 *
-	 * @param conn 数据库连接
 	 */
-	public static void showHelpInfo(Connection conn) {
-		try {
-			DatabaseMetaData metaData = conn.getMetaData ();
-			log.info ("Your database product name is: {}", metaData.getDatabaseProductName ());
-			log.info ("Your database product version is: {}", metaData.getDatabaseProductVersion ());
-			log.info ("The 'catalog' indicates '{}' in your database.", metaData.getCatalogTerm ());
-			log.info ("The 'schema' indicates '{}' in your database.", metaData.getSchemaTerm ());
-		} catch (SQLException e) {
-			e.printStackTrace ();
-		}
+	public void showHelpInfo() throws SQLException {
+		log.info ("Your database product name is: {}", dbMetaData.getDatabaseProductName ());
+		log.info ("Your database product version is: {}", dbMetaData.getDatabaseProductVersion ());
+		log.info ("The 'catalog' indicates '{}' in your database.", dbMetaData.getCatalogTerm ());
+		log.info ("The 'schema' indicates '{}' in your database.", dbMetaData.getSchemaTerm ());
+	}
+
+	@Override
+	public void close() throws Exception {
+		connection.close ();
 	}
 }
