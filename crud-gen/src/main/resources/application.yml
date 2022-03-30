@@ -5,65 +5,66 @@ spring:
   main:
     banner-mode: off
   profiles:
-    include: config
+    #    include: config
+    active: config
 
 crud-gen:
-  jdbc-ds:
-    url: ${cru-gen.datasoure.url}
-    user: ${cru-gen.datasoure.user}
-    password: ${cru-gen.datasoure.password}
-    driver: ${cru-gen.datasoure.driver}
-    catalog: ${cru-gen.datasoure.catalog}
-    schema-pattern: ${cru-gen.datasoure.schema}
-    table-name-pattern: ${cru-gen.datasoure.catalog.table-name}
-    column-name-pattern: ${cru-gen.datasoure.catalog.column-name}
-
+  jdbc-data:
+    url: ${crud-gen.datasource.url}
+    user: ${crud-gen.datasource.user}
+    password: ${crud-gen.datasource.password}
+    driver: ${crud-gen.datasource.driver}
+    catalog: ${crud-gen.datasource.catalog}
+    schema-pattern: ${crud-gen.datasource.schema}
+    #    table-names: [ user,user_role,role ]
+    table-name-pattern: ${crud-gen.datasource.table-name-pattern}
+    column-name-pattern: ${crud-gen.datasource.column-name-pattern}
 
   static-data:
-    mainPath: ${common.mainPath}
-    package: ${common.package}
-    moduleName: ${common.moduleName}
-    author: ${common.author}
+    mainPath: ${crud-gen.mainPath}
+    package: ${crud-gen.package}
+    moduleName: ${crud-gen.moduleName}
+    author: ${crud-gen.author}
 
-  native-file-receiver:
-    output-dir: ${crud-gen.path.packge}
+  receiver:
+    output-dir: ${crud-gen.path.package}
 
-  simple-ts:
-    template-dir: ${crud-gen.path.resources}\template
-    templates:
-      - template-file-path: Controller.java.vm
-        target-dir: ${crud-gen.path.packge}\controller
-        filename-template: '${className}Controller.java'
+  template:
+    template-dir: ${crud-gen.path.template}
+    template-files:
+      - file-path: Controller.java.vm
+        target-dir: ${crud-gen.path.package}\controller
+        target-filename: '${className}Controller.java'
 
-      - template-file-path: Service.java.vm
-        target-dir: ${crud-gen.path.packge}\service
-        filename-template: '${className}Service.java'
+      - file-path: Service.java.vm
+        target-dir: ${crud-gen.path.package}\service
+        target-filename: '${className}Service.java'
 
-      - template-file-path: ServiceImpl.java.vm
-        target-dir: ${crud-gen.path.packge}\service\impl
-        filename-template: '${className}ServiceImpl.java'
+      - file-path: ServiceImpl.java.vm
+        target-dir: ${crud-gen.path.package}\service\impl
+        target-filename: '${className}ServiceImpl.java'
 
-      - template-file-path: Entity.java.vm
-        target-dir: ${crud-gen.path.packge}\entity
-        filename-template: '${className}.java'
+      - file-path: Entity.java.vm
+        target-dir: ${crud-gen.path.package}\entity
+        target-filename: '${className}Entity.java'
 
-      - template-file-path: Dao.java.vm
-        target-dir: ${crud-gen.path.packge}\dao
-        filename-template: '${className}Dao.java'
+      - file-path: Dao.java.vm
+        target-dir: ${crud-gen.path.package}\dao
+        target-filename: '${className}Dao.java'
 
-      - template-file-path: mappper.xml.vm
+      - file-path: mappper.xml.vm
         target-dir: ${crud-gen.path.resources}\mapper
-        filename-template: '${className}Mapper.xml'
+        target-filename: '${className}Mapper.xml'
 
-#      - templateFilePath: add-or-update.vue.vm
-#        targetDir: ${crud-gen.path.resources}\vue
-#        filename-template: ${table.name.ucc}-add-or-update
-#
-#      - templateFilePath: index.vue.vm
+#      - file-path: add-or-update.vue.vm
 #        target-dir: ${crud-gen.path.resources}\vue
-#        filename-template:
-#        static-scope: true
+#        target-filename: ${table.name.ucc}-add-or-update
 #
-#      - templateFilePath: menu.sql.vm
+#      - file-path: index.vue.vm
+#        target-dir: ${crud-gen.path.resources}\vue
+#        target-filename:
+#        static-template: true
+#
+#      - file-path: menu.sql.vm
 #        target-dir: ${crud-gen.path.resources}\sql
-#        filename-template:
+#        target-filename:

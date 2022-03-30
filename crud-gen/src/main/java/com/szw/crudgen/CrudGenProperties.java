@@ -1,10 +1,10 @@
 package com.szw.crudgen;
 
-import com.szw.codegen.core.datasource.CsvDataSource;
-import com.szw.codegen.core.datasource.JdbcDataSource;
-import com.szw.codegen.core.datasource.JsonDataSource;
+import com.szw.codegen.core.container.data.CsvDataContainer;
+import com.szw.codegen.core.container.data.JdbcTableMetaDataContainer;
+import com.szw.codegen.core.container.data.JsonDataContainer;
+import com.szw.codegen.core.container.template.SimpleTemplateContainer;
 import com.szw.codegen.core.receiver.NativeFileReceiver;
-import com.szw.codegen.core.templatesource.SimpleTemplateSource;
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -21,19 +21,19 @@ import java.util.Map;
 public class CrudGenProperties {
 
 	@NestedConfigurationProperty
-	private JdbcDataSource.Builder jdbcDs;
+	private JdbcTableMetaDataContainer.Builder jdbcData;
 
 	@NestedConfigurationProperty
-	private JsonDataSource jsonDs;
+	private JsonDataContainer jsonData;
 
 	@NestedConfigurationProperty
-	private CsvDataSource csvDs;
+	private CsvDataContainer csvData;
 
 	@NestedConfigurationProperty
-	private SimpleTemplateSource simpleTs;
+	private SimpleTemplateContainer template;
 
 	@NestedConfigurationProperty
-	private NativeFileReceiver nativeFileReceiver;
+	private NativeFileReceiver receiver;
 
 	private Map<String, Object> staticData;
 

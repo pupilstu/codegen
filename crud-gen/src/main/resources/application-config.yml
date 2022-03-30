@@ -1,20 +1,21 @@
 crud-gen:
-  # 项目的common模块路径.
+  # 项目的common模块包名
   mainPath: com.szw
   # 本模块包名
   package: com.szw
   # 模块名
-  moduleName: user
+  moduleName: msuser
   author: szw
 
   # 文件夹路径相关配置
   path:
     main: D:\project\monkey-space\monkey-space\ms-user\src\main
-    packge: ${crud-gen.main}\java\com\szw\user
-    resources: ${crud-gen.main}\resources
+    package: ${crud-gen.path.main}\java\com\szw\msuser
+    resources: ${crud-gen.path.main}\resources
+    template: D:\project\monkey-space\monkey-space\codegen\src\main\resources\template
 
   datasource:
-    url: 'jdbc:mysql://192.168.108.129/ms-user
+    url: 'jdbc:mysql://xixie.icu/ms_user
       ?useUnicode=true
       &characterEncoding=UTF-8
       &useSSL=false
@@ -24,10 +25,11 @@ crud-gen:
     user: root
     password: root
     driver: com.mysql.cj.jdbc.Driver
-    # Mysql的数据库名。有的数据库使用catalog作为数据库名，有的则使用scheam，
-    # 可配置好数据库连接后启动程序，从日志打印查看具体是哪一个。
-    catalog: ms-user
+    # 如启动程序提示缺少依赖，则添加相关 JDBC driver 依赖
+    # Mysql的数据库名。有的数据库使用catalog作为数据库名，有的则使用scheam，根据实际情况二选一。
+    # 可配置好数据库连接后启动程序，从日志打印查看具体是哪一个.
+    catalog: ms_user
     scheam:
-    # 以下两项均可使用sql通配符，不填表示匹配所有
-    table-name: user/_%
-    column-name:
+    # 以下两项均可使用sql通配符（eg：user/_%）。对通配符进行转义的时候，需要注意不同数据库有不同的写法
+    table-name-pattern: '%'
+    column-name-pattern: '%'

@@ -16,7 +16,6 @@ import java.util.Map;
  * @author SZW
  */
 public class TypeMapInterceptor implements Interceptor<TemplateFile, ResultFile> {
-	public static final String DEFAULT_PROPERTIES_FILE_NAME = "typeMapping.properties";
 
 	private final Map<String, String> typeMap;
 
@@ -39,10 +38,6 @@ public class TypeMapInterceptor implements Interceptor<TemplateFile, ResultFile>
 		} catch (ConfigurationException e) {
 			throw new RuntimeException ("Failed to read file '" + propertiesFileName + "'.");
 		}
-	}
-
-	public TypeMapInterceptor() {
-		this (DEFAULT_PROPERTIES_FILE_NAME);
 	}
 
 	@Override
