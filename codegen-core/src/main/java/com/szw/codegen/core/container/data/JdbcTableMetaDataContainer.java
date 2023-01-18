@@ -92,7 +92,7 @@ public class JdbcTableMetaDataContainer implements Container<TableMetaData> {
 				for (TableMetaData tableMetaData : tableMetaDataList) {
 					tables.append (tableMetaData.getRawName ()).append (", ");
 				}
-				log.info ("These tables wil be used:\n{}\n", tables);
+				log.info ("These tables wil be used: {}", tables);
 			}
 
 

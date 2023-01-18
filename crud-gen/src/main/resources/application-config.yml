@@ -1,21 +1,21 @@
 crud-gen:
   # 项目的common模块包名
-  mainPath: com.szw
+  mainPath: com.xuxy.core.data.mysql
   # 本模块包名
-  package: com.szw
+  package: com.xuxy.core.data
   # 模块名
-  moduleName: msuser
-  author: szw
+  moduleName: mysql
+  author: xuxy
 
   # 文件夹路径相关配置
   path:
-    main: D:\project\monkey-space\monkey-space\ms-user\src\main
-    package: ${crud-gen.path.main}\java\com\szw\msuser
-    resources: ${crud-gen.path.main}\resources
-    template: D:\project\monkey-space\monkey-space\codegen\src\main\resources\template
+    main: /home/xuxy/IdeaProjects/codegen/demo
+    package: ${crud-gen.path.main}/java/com/xuxy/core/data/mysql
+    resources: ${crud-gen.path.main}/java/com/xuxy/core/data/mysql/resources
+    template: /home/xuxy/IdeaProjects/codegen/crud-gen/src/main/resources/template
 
   datasource:
-    url: 'jdbc:mysql://xixie.icu/ms_user
+    url: 'jdbc:mysql://xuxingyudata0:31306/default
       ?useUnicode=true
       &characterEncoding=UTF-8
       &useSSL=false
@@ -23,13 +23,13 @@ crud-gen:
       &useInformationSchema=true'  # 必须要加 useInformationSchema=true ！！！否则将读不到表的comment
 
     user: root
-    password: root
+    password:
     driver: com.mysql.cj.jdbc.Driver
     # 如启动程序提示缺少依赖，则添加相关 JDBC driver 依赖
     # Mysql的数据库名。有的数据库使用catalog作为数据库名，有的则使用scheam，根据实际情况二选一。
     # 可配置好数据库连接后启动程序，从日志打印查看具体是哪一个.
-    catalog: ms_user
-    scheam:
+    catalog: default
+    schema: default
     # 以下两项均可使用sql通配符（eg：user/_%）。对通配符进行转义的时候，需要注意不同数据库有不同的写法
     table-name-pattern: '%'
     column-name-pattern: '%'

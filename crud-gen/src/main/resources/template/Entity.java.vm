@@ -1,7 +1,7 @@
 package ${package}.${moduleName}.entity;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.math.BigDecimal;
 import java.io.Serializable;
@@ -14,7 +14,7 @@ import lombok.Data;
  * @author ${author}
  */
 @Data
-@TableName("${tableName}")
+@Table("${tableName}")
 public class ${className} implements Serializable {
 	private static final long serialVersionUID = 1L;
 
@@ -23,7 +23,7 @@ public class ${className} implements Serializable {
 	 * $column.remarks
 	 */
 	#if($column.name == "id")
-	@TableId
+	@Id
 	#end
 	private $column.className $column.name;
 #end

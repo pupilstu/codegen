@@ -33,38 +33,38 @@ crud-gen:
     template-dir: ${crud-gen.path.template}
     template-files:
       - file-path: Controller.java.vm
-        target-dir: ${crud-gen.path.package}\controller
+        target-dir: ${crud-gen.path.package}/controller
         target-filename: '${className}Controller.java'
 
       - file-path: Service.java.vm
-        target-dir: ${crud-gen.path.package}\service
+        target-dir: ${crud-gen.path.package}/service
         target-filename: '${className}Service.java'
 
       - file-path: ServiceImpl.java.vm
-        target-dir: ${crud-gen.path.package}\service\impl
+        target-dir: ${crud-gen.path.package}/service/impl
         target-filename: '${className}ServiceImpl.java'
 
       - file-path: Entity.java.vm
-        target-dir: ${crud-gen.path.package}\entity
+        target-dir: ${crud-gen.path.package}/entity
         target-filename: '${className}Entity.java'
 
       - file-path: Dao.java.vm
-        target-dir: ${crud-gen.path.package}\dao
+        target-dir: ${crud-gen.path.package}/dao
         target-filename: '${className}Dao.java'
 
       - file-path: mappper.xml.vm
-        target-dir: ${crud-gen.path.resources}\mapper
+        target-dir: ${crud-gen.path.resources}/mapper
         target-filename: '${className}Mapper.xml'
 
 #      - file-path: add-or-update.vue.vm
-#        target-dir: ${crud-gen.path.resources}\vue
+#        target-dir: ${crud-gen.path.resources}/vue
 #        target-filename: ${table.name.ucc}-add-or-update
 #
 #      - file-path: index.vue.vm
-#        target-dir: ${crud-gen.path.resources}\vue
+#        target-dir: ${crud-gen.path.resources}/vue
 #        target-filename:
 #        static-template: true
 #
 #      - file-path: menu.sql.vm
-#        target-dir: ${crud-gen.path.resources}\sql
+#        target-dir: ${crud-gen.path.resources}/sql
 #        target-filename:
